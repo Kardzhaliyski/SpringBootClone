@@ -21,12 +21,8 @@ public class Container {
     private final Set<Class<?>> initsInProgress = new HashSet<>();
     private ListenerStorage listenerStorage;
 
-    public Container() {
-        try {
+    public Container() throws Exception {
             this.listenerStorage = getInstance(ListenerStorage.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public Container(Properties properties) {

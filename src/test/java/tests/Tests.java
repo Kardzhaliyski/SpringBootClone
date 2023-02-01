@@ -12,7 +12,7 @@ public class Tests {
     Container r;
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception {
         r = new Container();
     }
 
