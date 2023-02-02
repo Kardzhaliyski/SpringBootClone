@@ -1,5 +1,6 @@
 package com.github.kardzhaliyski.container;
 
+import com.github.kardzhaliyski.boot.annotations.*;
 import com.github.kardzhaliyski.container.annotations.*;
 import com.github.kardzhaliyski.container.asyncs.AsyncDelegation;
 import com.github.kardzhaliyski.container.events.EventListener;
@@ -15,6 +16,12 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class Container {
+    public static final Set<Class<?>> COMPONENT_ANNOTATIONS = Set.of(
+            Component.class,
+            Controller.class,
+            RestController.class,
+            Service.class,
+            Mapper.class);
     private final Map<String, Object> namedInstances = new HashMap<>();
     private final Map<Class<?>, Object> classInstances = new HashMap<>();
     private final Map<Class<?>, Class<?>> implementations = new HashMap<>();
@@ -260,8 +267,8 @@ public class Container {
         namedInstances.put(key, instance);
     }
 
-    public <T> void registerImplementation(Class<T> c, Class<? extends T> subClass) {
-        implementations.put(c, subClass);
+    public <T> void registerImplementation(Class<?> superClass, Class<?> subClass) {
+        implementations.put(superClass, subClass);
     }
 
     public void registerInstance(Class<?> c, Object instance) {
