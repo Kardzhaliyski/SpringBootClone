@@ -29,7 +29,7 @@ public class Container {
     private ListenerStorage listenerStorage;
 
     public Container() throws Exception {
-            this.listenerStorage = getInstance(ListenerStorage.class);
+        this.listenerStorage = getInstance(ListenerStorage.class);
     }
 
     public Container(Properties properties) {
@@ -241,7 +241,12 @@ public class Container {
 
     private static Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException {
         Constructor<?> constructor = null;
-        for (Constructor<?> c : clazz.getDeclaredConstructors()) {
+        Constructor<?>[] constructors = clazz.getConstructors();
+        if (constructors.length == 1) {
+            return constructors[0];
+        }
+        
+        for (Constructor<?> c : constructors) {
             Autowire ann = c.getDeclaredAnnotation(Autowire.class);
             if (ann == null) {
                 continue;

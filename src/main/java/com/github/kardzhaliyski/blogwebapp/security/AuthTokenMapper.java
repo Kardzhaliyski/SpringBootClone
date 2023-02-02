@@ -1,7 +1,7 @@
 package com.github.kardzhaliyski.blogwebapp.security;
 
+import com.github.kardzhaliyski.boot.annotations.Mapper;
 import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper

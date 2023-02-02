@@ -4,7 +4,7 @@ import com.github.kardzhaliyski.blogwebapp.mappers.UserMapper;
 import com.github.kardzhaliyski.blogwebapp.models.User;
 import com.github.kardzhaliyski.blogwebapp.models.dto.RegisterUserDTO;
 import com.github.kardzhaliyski.boot.annotations.Service;
-import com.github.kardzhaliyski.boot.interfaces.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserService {

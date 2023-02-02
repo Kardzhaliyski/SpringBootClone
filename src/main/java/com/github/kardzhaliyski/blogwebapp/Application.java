@@ -1,5 +1,6 @@
 package com.github.kardzhaliyski.blogwebapp;
 
+import com.github.kardzhaliyski.boot.ContainerAutoConfigurator;
 import com.github.kardzhaliyski.boot.SpringApplication;
 import com.github.kardzhaliyski.boot.annotations.SpringBootApplication;
 

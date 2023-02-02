@@ -5,7 +5,8 @@ import com.github.kardzhaliyski.blogwebapp.models.User;
 import com.github.kardzhaliyski.blogwebapp.models.dto.LoginUserDTO;
 import com.github.kardzhaliyski.blogwebapp.security.AuthenticationService;
 import com.github.kardzhaliyski.boot.annotations.Service;
-import com.github.kardzhaliyski.boot.interfaces.PasswordEncoder;
+import com.github.kardzhaliyski.container.annotations.Autowire;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ public class LoginService {
     private final UserMapper userMapper;
     private final AuthenticationService authService;
     private final PasswordEncoder passwordEncoder;
+
 
     public LoginService(UserMapper userMapper, AuthenticationService authService, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
