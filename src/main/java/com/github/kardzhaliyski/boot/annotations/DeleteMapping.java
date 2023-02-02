@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 //@RequestMapping(method = RequestMethod.DELETE) //todo
 public @interface DeleteMapping {
-    String value();
+    String[] value();
 }

@@ -3,6 +3,7 @@ package com.github.kardzhaliyski.boot;
 import com.github.kardzhaliyski.boot.annotations.*;
 import com.github.kardzhaliyski.boot.utils.MybatisConfig;
 import com.github.kardzhaliyski.container.Container;
+import com.github.kardzhaliyski.server.DispatcherServlet;
 import org.apache.ibatis.io.Resources;
 
 import java.io.*;
@@ -22,7 +23,9 @@ public class ContainerAutoConfigurator {
             RestController.class,
             Service.class,
             Mapper.class);
+
     private final Container container;
+    private DispatcherServlet dispatcherServlet;
 
     public ContainerAutoConfigurator() {
         try {
@@ -36,14 +39,23 @@ public class ContainerAutoConfigurator {
         this.container = container;
     }
 
+    public Container getContainer() {
+        return container;
+    }
+
     public void run(Class<?> primaryClass) throws Exception {
         Set<Class<?>> classes = getClasses(primaryClass);
-        Properties properties = Resources.getResourceAsProperties("application.properties");
-        properties.forEach((k, v) -> container.registerInstance((String) k, v));
+        importProperties();
         extractInterfaceImplementations(classes);
         extractBeansFromConfigurations(classes);
         MybatisConfig.init(container, classes);
+        dispatcherServlet = container.getInstance(DispatcherServlet.class);
         initComponents(classes);
+    }
+
+    private void importProperties() throws IOException {
+        Properties properties = Resources.getResourceAsProperties("application.properties");
+        properties.forEach((k, v) -> container.registerInstance((String) k, v));
     }
 
     private void initComponents(Set<Class<?>> classes) throws Exception {
@@ -56,13 +68,16 @@ public class ContainerAutoConfigurator {
                 continue;
             }
 
-            container.getInstance(clazz);
+            Object instance = container.getInstance(clazz);
+            if(clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(RestController.class)) {
+                dispatcherServlet.addController(instance);
+            }
         }
     }
 
     private boolean isComponent(Class<?> clazz) {
         for (Annotation annotation : clazz.getAnnotations()) {
-            if (COMPONENT_ANNOTATIONS.contains(annotation.getClass())){
+            if (COMPONENT_ANNOTATIONS.contains(annotation.annotationType())){
                 return true;
             }
         }
