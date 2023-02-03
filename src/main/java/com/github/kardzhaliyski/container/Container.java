@@ -30,6 +30,7 @@ public class Container {
 
     public Container() throws Exception {
         this.listenerStorage = getInstance(ListenerStorage.class);
+        registerInstance(this);
     }
 
     public Container(Properties properties) {
@@ -245,7 +246,7 @@ public class Container {
         if (constructors.length == 1) {
             return constructors[0];
         }
-        
+
         for (Constructor<?> c : constructors) {
             Autowire ann = c.getDeclaredAnnotation(Autowire.class);
             if (ann == null) {

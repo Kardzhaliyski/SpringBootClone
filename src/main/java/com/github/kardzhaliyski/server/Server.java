@@ -3,9 +3,6 @@ package com.github.kardzhaliyski.server;
 import com.github.kardzhaliyski.container.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Service;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
 
 public class Server {
@@ -29,7 +26,6 @@ public class Server {
         tomcat.getConnector();
 
         Context context = tomcat.addContext("", null);
-//        DispatcherServlet servlet = new DispatcherServlet();
         DispatcherServlet servlet = container.getInstance(DispatcherServlet.class);
         String servletName = servlet.getClass().getSimpleName();
         tomcat.addServlet("", servletName, servlet);

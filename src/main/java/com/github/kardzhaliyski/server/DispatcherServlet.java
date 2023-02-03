@@ -1,19 +1,19 @@
 package com.github.kardzhaliyski.server;
 
 import com.github.kardzhaliyski.boot.annotations.*;
+import com.github.kardzhaliyski.container.Container;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DispatcherServlet extends HttpServlet {
@@ -23,26 +23,15 @@ public class DispatcherServlet extends HttpServlet {
             PostMapping.class,
             DeleteMapping.class);
 
-    private static class RequestHandler {
-        Object instance;
-        Method method;
+    private final Container container;
+    Map<String, RequestHandler> simpleRequests;
+    Map<Pattern, RequestHandler> complexRequests;
 
-        public RequestHandler(Object instance, Method method) {
-            this.instance = instance;
-            this.method = method;
-        }
-
-        public Object invoke() {
-            try {
-                return this.method.invoke(instance);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public DispatcherServlet(Container container) {
+        this.container = container;
+        this.simpleRequests = new HashMap<>();
+        this.complexRequests = new HashMap<>();
     }
-
-    Map<String, RequestHandler> simpleRequests = new HashMap<>();
-    Map<Pattern, RequestHandler> complexRequests = new HashMap<>();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,25 +44,36 @@ public class DispatcherServlet extends HttpServlet {
         String path = normalizePath(method, pathInfo);
 
         RequestHandler requestHandler = simpleRequests.get(path);
-        if(requestHandler == null) {
+        if (requestHandler != null) {
+            try {
+                requestHandler.invoke(req, resp);
+            } catch (Exception e) {
+                throw new RuntimeException(e); //todo
+            }
+        } else {
             for (Map.Entry<Pattern, RequestHandler> kvp : complexRequests.entrySet()) {
                 Pattern pattern = kvp.getKey();
-                if (pattern.matcher(path).matches()) {
+                Matcher matcher = pattern.matcher(path);
+                if (matcher.matches()) {
                     requestHandler = kvp.getValue();
+                    try {
+                        requestHandler.invoke(req, resp, matcher);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);//todo
+                    }
                     break;
                 }
             }
         }
 
-        if(requestHandler == null) {
+        if (requestHandler == null) {
             return;
             //todo return 404
         }
+    }
 
-        Object response = requestHandler.invoke();
-        PrintWriter writer = resp.getWriter();
-        writer.println(response);
-        writer.flush();
+    public Container getContainer() {
+        return container;
     }
 
     public void addController(Object controller) {//todo need refactoring
@@ -115,7 +115,7 @@ public class DispatcherServlet extends HttpServlet {
 
             for (String p : paths) {
                 String path = normalizePath(methodType, pathPrefix, p);
-                RequestHandler requestHandler = new RequestHandler(controller, method);
+                RequestHandler requestHandler = new RequestHandler(controller, method, this);
 
                 if (path.contains("*") || path.contains("{")) {
                     Pattern pattern = compilePattern(path);
@@ -139,7 +139,7 @@ public class DispatcherServlet extends HttpServlet {
 
     private String normalizePath(String methodType, String path) {
         String newPath = methodType.toUpperCase() + ":" + path;
-        if(newPath.length() > 1 && newPath.endsWith("/")){
+        if (newPath.length() > 1 && newPath.endsWith("/")) {
             newPath = newPath.substring(0, newPath.length() - 2);
         }
 
@@ -168,7 +168,7 @@ public class DispatcherServlet extends HttpServlet {
     private Pattern compilePattern(String path) {
         path = path.replaceAll("\\.", "\\\\.");
         path = path.replaceAll("\\*", "\\.+");
-        path = path.replaceAll("\\{\\w+}", "[\\\\w-\\\\.]+");
+        path = path.replaceAll("\\{\\w+}", "([\\\\w-\\\\.]+)");
         return Pattern.compile(path);
     }
 }

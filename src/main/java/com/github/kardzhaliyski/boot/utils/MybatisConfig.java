@@ -45,7 +45,7 @@ public class MybatisConfig {
         }
 
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(mybatisConfig);
-        SqlSession session = sqlSessionFactory.openSession(); //todo close and refresh ???
+        SqlSession session = sqlSessionFactory.openSession(true); //todo close and refresh ???
         for (Class<?> clazz : mapperClasses) {
             Object mapper = session.getMapper(clazz);
             container.registerInstance(clazz, mapper);
