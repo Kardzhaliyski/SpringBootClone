@@ -13,7 +13,7 @@ import com.github.kardzhaliyski.springbootclone.annotations.*;
 import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
 import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
-import com.github.kardzhaliyski.springbootclone.utils.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
 
 import java.util.Optional;
 

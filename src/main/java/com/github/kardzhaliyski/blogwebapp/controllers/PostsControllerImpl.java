@@ -8,7 +8,7 @@ import com.github.kardzhaliyski.blogwebapp.models.UserRole;
 import com.github.kardzhaliyski.blogwebapp.security.Role;
 import com.github.kardzhaliyski.springbootclone.annotations.*;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
-import com.github.kardzhaliyski.springbootclone.utils.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
 import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
 
 import static com.github.kardzhaliyski.springbootclone.utils.HttpStatus.*;

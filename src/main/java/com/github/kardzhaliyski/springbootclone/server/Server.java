@@ -1,9 +1,12 @@
 package com.github.kardzhaliyski.springbootclone.server;
 
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
+import com.github.kardzhaliyski.springbootclone.filters.ExceptionHandlerFilter;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 
 public class Server {
     private static final int DEFAULT_PORT = 8080;
@@ -30,5 +33,16 @@ public class Server {
         String servletName = servlet.getClass().getSimpleName();
         tomcat.addServlet("", servletName, servlet);
         context.addServletMappingDecoded("/*", servletName);
+
+        ExceptionHandlerFilter exceptionHandler = new ExceptionHandlerFilter();
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilter(exceptionHandler);
+        filterDef.setFilterName("ResponseEntityExceptionHandler");
+        FilterMap filterMap = new FilterMap();
+        filterMap.setFilterName("ResponseEntityExceptionHandler");
+        filterMap.addURLPattern("/*");
+
+        context.addFilterDef(filterDef);
+        context.addFilterMap(filterMap);
     }
 }

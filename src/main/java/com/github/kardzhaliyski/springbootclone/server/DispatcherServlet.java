@@ -2,6 +2,8 @@ package com.github.kardzhaliyski.springbootclone.server;
 
 import com.github.kardzhaliyski.springbootclone.annotations.*;
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
+import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,8 +69,7 @@ public class DispatcherServlet extends HttpServlet {
         }
 
         if (requestHandler == null) {
-            return;
-            //todo return 404
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
