@@ -3,7 +3,6 @@ package com.github.kardzhaliyski.springbootclone.utils;
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
-import org.apache.ibatis.datasource.unpooled.UnpooledDataSource;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -30,7 +29,9 @@ public class MybatisConfig {
         String username = (String) applicationContext.getInstance(DATASOURCE_USERNAME_PROPERTY_KEY);
         String password = (String) applicationContext.getInstance(DATASOURCE_PASSWORD_PROPERTY_KEY);
 
-        //todo missing validation checks
+        if (url == null || username == null || password == null || driver == null) {
+            throw new IllegalStateException("Missing datasource properties"); //todo
+        }
 
         PooledDataSource dataSource = new PooledDataSource(driver, url, username, password);
         Environment env = new Environment("env", new JdbcTransactionFactory(), dataSource);
@@ -49,7 +50,7 @@ public class MybatisConfig {
 
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(mybatisConfig);
         for (Class<?> clazz : mapperClasses) {
-            Object mapper =  Proxy.newProxyInstance(
+            Object mapper = Proxy.newProxyInstance(
                     MybatisConfig.class.getClassLoader(),
                     new Class[]{clazz},
                     new MapperInvocationHandler(sqlSessionFactory, clazz));
@@ -61,6 +62,7 @@ public class MybatisConfig {
     private static class MapperInvocationHandler implements InvocationHandler {
         private SqlSessionFactory sqlSessionFactory;
         private Class<?> mapperClass;
+
         public MapperInvocationHandler(SqlSessionFactory sqlSessionFactory, Class<?> mapperClass) {
             this.sqlSessionFactory = sqlSessionFactory;
             this.mapperClass = mapperClass;

@@ -1,11 +1,12 @@
 package com.github.kardzhaliyski.blogwebapp.interceptors;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.github.kardzhaliyski.springbootclone.annotations.Configuration;
+import com.github.kardzhaliyski.springbootclone.interceptors.InterceptorRegistry;
+import com.github.kardzhaliyski.springbootclone.interceptors.WebMvcConfigurer;
 
 @Configuration
-public class InterceptorConfigurer implements WebMvcConfigurer {
+public class InterceptorConfigurer implements WebMvcConfigurer { //todo
     ExceptionLogger exceptionLogger;
     AuthInterceptor authInterceptor;
 
