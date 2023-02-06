@@ -1,9 +1,9 @@
 package events;
 
-import com.github.kardzhaliyski.container.Container;
-import com.github.kardzhaliyski.container.events.ApplicationEvent;
-import com.github.kardzhaliyski.container.events.ApplicationEventPublisher;
-import com.github.kardzhaliyski.container.events.SimpleApplicationEventMulticaster;
+import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
+import com.github.kardzhaliyski.springbootclone.context.events.ApplicationEvent;
+import com.github.kardzhaliyski.springbootclone.context.events.ApplicationEventPublisher;
+import com.github.kardzhaliyski.springbootclone.context.events.SimpleApplicationEventMulticaster;
 import events.classes.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +15,11 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestListener {
-    Container r;
+    ApplicationContext r;
 
     @BeforeEach
     public void init() throws Exception {
-        r = new Container();
+        r = new ApplicationContext();
     }
 
     @Test

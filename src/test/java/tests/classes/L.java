@@ -1,7 +1,7 @@
 package tests.classes;
 
-import com.github.kardzhaliyski.container.annotations.Autowire;
-import com.github.kardzhaliyski.container.annotations.Lazy;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Autowire;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Lazy;
 
 public class L {
     @Autowire

@@ -1,6 +1,6 @@
 package asyncs;
 
-import com.github.kardzhaliyski.container.annotations.Async;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Async;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;

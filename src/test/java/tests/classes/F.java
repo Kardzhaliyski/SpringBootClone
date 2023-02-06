@@ -1,7 +1,7 @@
 package tests.classes;
 
-import com.github.kardzhaliyski.container.annotations.Autowire;
-import com.github.kardzhaliyski.container.annotations.Qualifier;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Autowire;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
 
 public class F {
     @Autowire

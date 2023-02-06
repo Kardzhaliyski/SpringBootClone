@@ -9,11 +9,11 @@ import com.github.kardzhaliyski.blogwebapp.security.AuthToken;
 import com.github.kardzhaliyski.blogwebapp.security.Role;
 import com.github.kardzhaliyski.blogwebapp.services.LoginService;
 import com.github.kardzhaliyski.blogwebapp.services.UserService;
-import com.github.kardzhaliyski.boot.annotations.*;
-import com.github.kardzhaliyski.boot.classes.ResponseEntity;
-import com.github.kardzhaliyski.boot.utils.HttpHeaders;
-import com.github.kardzhaliyski.boot.utils.HttpStatus;
-import com.github.kardzhaliyski.boot.utils.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.annotations.*;
+import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
+import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
+import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
+import com.github.kardzhaliyski.springbootclone.utils.ResponseStatusException;
 
 import java.util.Optional;
 

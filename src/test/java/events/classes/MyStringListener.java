@@ -1,7 +1,7 @@
 package events.classes;
 
 
-import com.github.kardzhaliyski.container.events.EventListener;
+import com.github.kardzhaliyski.springbootclone.context.events.EventListener;
 
 public class MyStringListener {
     public Object receivedObject = null;

@@ -1,7 +1,7 @@
 package tests;
 
-import com.github.kardzhaliyski.container.Container;
-import com.github.kardzhaliyski.container.ContainerException;
+import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
+import com.github.kardzhaliyski.springbootclone.context.ApplicationContextException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tests.classes.*;
@@ -9,11 +9,11 @@ import tests.classes.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Tests {
-    Container r;
+    ApplicationContext r;
 
     @BeforeEach
     public void init() throws Exception {
-        r = new Container();
+        r = new ApplicationContext();
     }
 
     @Test
@@ -88,7 +88,7 @@ public class Tests {
 
     @Test()
     public void injectMissingDefaultImplementationForInterface() throws Exception {
-        assertThrows(ContainerException.class, () -> r.getInstance(AI.class));
+        assertThrows(ApplicationContextException.class, () -> r.getInstance(AI.class));
     }
 
     @Test

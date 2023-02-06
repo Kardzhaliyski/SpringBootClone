@@ -1,7 +1,7 @@
 package com.github.kardzhaliyski.blogwebapp.models;
 
 
-import com.github.kardzhaliyski.container.annotations.Qualifier;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
 
 public class Post {
     public int id;

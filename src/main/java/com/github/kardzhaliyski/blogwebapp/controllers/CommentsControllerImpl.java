@@ -4,10 +4,10 @@ import com.github.kardzhaliyski.blogwebapp.mappers.CommentMapper;
 import com.github.kardzhaliyski.blogwebapp.models.Comment;
 import com.github.kardzhaliyski.blogwebapp.models.UserRole;
 import com.github.kardzhaliyski.blogwebapp.security.Role;
-import com.github.kardzhaliyski.boot.annotations.GetMapping;
-import com.github.kardzhaliyski.boot.annotations.RequestMapping;
-import com.github.kardzhaliyski.boot.annotations.RequestParam;
-import com.github.kardzhaliyski.boot.annotations.RestController;
+import com.github.kardzhaliyski.springbootclone.annotations.GetMapping;
+import com.github.kardzhaliyski.springbootclone.annotations.RequestMapping;
+import com.github.kardzhaliyski.springbootclone.annotations.RequestParam;
+import com.github.kardzhaliyski.springbootclone.annotations.RestController;
 
 @RestController
 @RequestMapping("/comments")
@@ -20,11 +20,11 @@ public class CommentsControllerImpl {
         this.commentMapper = commentMapper;
     }
 
-    @GetMapping({"/", ""})
-    @Role(UserRole.USER)
-    public Comment[] getComments() {
-        return commentMapper.getAllComments();
-    }
+//    @GetMapping({"/", ""})
+//    @Role(UserRole.USER)
+//    public Comment[] getComments() {
+//        return commentMapper.getAllComments();
+//    }
 
     @GetMapping(value = {"/", ""}, params = {"postId"})
     @Role(UserRole.USER)

@@ -1,7 +1,7 @@
 package com.github.kardzhaliyski.blogwebapp.security;
 
 import com.github.kardzhaliyski.blogwebapp.models.UserRole;
-import com.github.kardzhaliyski.boot.annotations.Service;
+import com.github.kardzhaliyski.springbootclone.annotations.Service;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.HashMap;

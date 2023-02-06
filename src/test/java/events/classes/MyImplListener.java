@@ -1,8 +1,8 @@
 package events.classes;
 
 
-import com.github.kardzhaliyski.container.events.ApplicationEvent;
-import com.github.kardzhaliyski.container.events.ApplicationListener;
+import com.github.kardzhaliyski.springbootclone.context.events.ApplicationEvent;
+import com.github.kardzhaliyski.springbootclone.context.events.ApplicationListener;
 
 public class MyImplListener implements ApplicationListener<ApplicationEvent> {
 

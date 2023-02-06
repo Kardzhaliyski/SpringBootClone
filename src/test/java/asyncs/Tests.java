@@ -1,6 +1,6 @@
 package asyncs;
 
-import com.github.kardzhaliyski.container.Container;
+import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class Tests {
 
-    static Container r;
+    static ApplicationContext r;
     static AsyncMethods asyncMethodsObject;
 
     @BeforeAll
     static void init() throws Exception {
-        r = new Container();
+        r = new ApplicationContext();
         asyncMethodsObject = r.getInstance(AsyncMethods.class);
     }
 

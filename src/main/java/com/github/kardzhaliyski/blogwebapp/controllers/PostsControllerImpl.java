@@ -6,12 +6,12 @@ import com.github.kardzhaliyski.blogwebapp.models.Comment;
 import com.github.kardzhaliyski.blogwebapp.models.Post;
 import com.github.kardzhaliyski.blogwebapp.models.UserRole;
 import com.github.kardzhaliyski.blogwebapp.security.Role;
-import com.github.kardzhaliyski.boot.annotations.*;
-import com.github.kardzhaliyski.boot.utils.HttpStatus;
-import com.github.kardzhaliyski.boot.utils.ResponseStatusException;
-import com.github.kardzhaliyski.boot.classes.ResponseEntity;
+import com.github.kardzhaliyski.springbootclone.annotations.*;
+import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
+import com.github.kardzhaliyski.springbootclone.utils.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
 
-import static com.github.kardzhaliyski.boot.utils.HttpStatus.*;
+import static com.github.kardzhaliyski.springbootclone.utils.HttpStatus.*;
 
 
 @RestController

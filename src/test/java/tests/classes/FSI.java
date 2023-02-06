@@ -1,8 +1,8 @@
 package tests.classes;
 
-import com.github.kardzhaliyski.container.annotations.Autowire;
-import com.github.kardzhaliyski.container.annotations.Initializer;
-import com.github.kardzhaliyski.container.annotations.Qualifier;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Autowire;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Initializer;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
 
 public class FSI implements Initializer {
     @Autowire

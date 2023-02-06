@@ -1,9 +1,6 @@
 package boot;
 
-import com.github.kardzhaliyski.blogwebapp.Application;
-import com.github.kardzhaliyski.boot.ContainerAutoConfigurator;
-import com.github.kardzhaliyski.boot.SpringApplication;
-import com.github.kardzhaliyski.container.Container;
+import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,11 +8,11 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class Tests {
-    Container r;
+    ApplicationContext r;
 
     @BeforeEach
     public void init() throws Exception {
-        r = new Container();
+        r = new ApplicationContext();
     }
 
     @Test

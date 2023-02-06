@@ -1,7 +1,6 @@
 package com.github.kardzhaliyski.blogwebapp.mappers;
 
 import com.github.kardzhaliyski.blogwebapp.models.Post;
-import com.github.kardzhaliyski.boot.annotations.Mapper;
 import org.apache.ibatis.annotations.*;
 
 @Mapper
