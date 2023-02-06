@@ -50,7 +50,7 @@ public class DispatcherServlet extends HttpServlet {
             try {
                 requestHandler.invoke(req, resp);
             } catch (Exception e) {
-                throw new RuntimeException(e); //todo
+                throw new ServletException(e);
             }
         } else {
             for (Map.Entry<Pattern, RequestHandler> kvp : complexRequests.entrySet()) {
@@ -61,7 +61,7 @@ public class DispatcherServlet extends HttpServlet {
                     try {
                         requestHandler.invoke(req, resp, matcher);
                     } catch (Exception e) {
-                        throw new RuntimeException(e);//todo
+                        throw new ServletException(e);
                     }
                     break;
                 }

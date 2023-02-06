@@ -16,12 +16,21 @@ public class ExceptionHandlerFilter extends HttpFilter {
         try {
             chain.doFilter(req, res);
         } catch (ResponseStatusException e) {
-            res.reset();
-            res.setStatus(e.httpStatus.getCode());
+            handle(res, e.httpStatus);
+        } catch (ServletException e) {
+            Throwable cause = e.getCause();
+            switch (cause) {
+                case ResponseStatusException ex -> handle(res, ex.httpStatus);
+                default -> handle(res, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
         catch (Exception e) {
-            res.reset();
-            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handle(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    private static void handle(HttpServletResponse res, HttpStatus e) throws IOException {
+        res.sendError(e.getCode());
+    }
+
 }

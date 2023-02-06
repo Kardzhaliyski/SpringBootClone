@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-//@RequestMapping(method = RequestMethod.Post) //todo
 public @interface PostMapping {
     String[] value();
 }

@@ -2,6 +2,7 @@ package com.github.kardzhaliyski.springbootclone.utils;
 
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.datasource.unpooled.UnpooledDataSource;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
@@ -10,6 +11,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +32,7 @@ public class MybatisConfig {
 
         //todo missing validation checks
 
-        UnpooledDataSource dataSource = new UnpooledDataSource(driver, url, username, password); //todo change to pooled after making it use more than 1 session
+        PooledDataSource dataSource = new PooledDataSource(driver, url, username, password);
         Environment env = new Environment("env", new JdbcTransactionFactory(), dataSource);
         Configuration mybatisConfig = new Configuration();
         mybatisConfig.setEnvironment(env);
@@ -44,10 +48,30 @@ public class MybatisConfig {
         }
 
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(mybatisConfig);
-        SqlSession session = sqlSessionFactory.openSession(true); //todo close and refresh ???
         for (Class<?> clazz : mapperClasses) {
-            Object mapper = session.getMapper(clazz);
+            Object mapper =  Proxy.newProxyInstance(
+                    MybatisConfig.class.getClassLoader(),
+                    new Class[]{clazz},
+                    new MapperInvocationHandler(sqlSessionFactory, clazz));
             applicationContext.registerInstance(clazz, mapper);
+        }
+
+    }
+
+    private static class MapperInvocationHandler implements InvocationHandler {
+        private SqlSessionFactory sqlSessionFactory;
+        private Class<?> mapperClass;
+        public MapperInvocationHandler(SqlSessionFactory sqlSessionFactory, Class<?> mapperClass) {
+            this.sqlSessionFactory = sqlSessionFactory;
+            this.mapperClass = mapperClass;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            try (SqlSession session = sqlSessionFactory.openSession(true)) {
+                Object mapper = session.getMapper(mapperClass);
+                return method.invoke(mapper, args);
+            }
         }
     }
 }

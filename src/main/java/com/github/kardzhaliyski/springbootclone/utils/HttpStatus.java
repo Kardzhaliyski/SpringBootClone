@@ -7,6 +7,7 @@ public enum HttpStatus {
     UNAUTHORIZED(401),
     NOT_FOUND(404),
     CONFLICT(409),
+    UNSUPPORTED_MEDIA_TYPE(415),
     INTERNAL_SERVER_ERROR(500);
 
     int code;

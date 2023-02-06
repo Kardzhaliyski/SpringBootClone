@@ -3,8 +3,10 @@ package com.github.kardzhaliyski.springbootclone.server;
 import com.github.kardzhaliyski.springbootclone.annotations.PathVariable;
 import com.github.kardzhaliyski.springbootclone.annotations.RequestBody;
 import com.github.kardzhaliyski.springbootclone.annotations.RequestParam;
+import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
 import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
 import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
+import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,13 +45,11 @@ public class RequestHandler {
 
 
         PrintWriter writer = resp.getWriter();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();//todo remove from here
         writer.println(gson.toJson(response));
         writer.flush();
     }
 
     private Object invokeMultiParamMethod(HttpServletRequest req, Matcher matcher, Parameter[] paramTypes) throws Exception {
-        Object response;
         Object[] params = new Object[paramTypes.length];
         int pathVarIndex = 1;
         Map<String, String> requestParams = null;
@@ -58,19 +58,21 @@ public class RequestHandler {
             if (paramType.isAnnotationPresent(RequestBody.class)) {
                 String contentType = req.getHeader(HttpHeaders.CONTENT_TYPE);
                 if (!contentType.equalsIgnoreCase("application/json")) {
-                    //todo return not supported media type
-                    throw new IllegalArgumentException();//todo remove
+                    throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
                 }
 
                 params[i] = gson.fromJson(req.getReader(), paramType.getType());
             } else if (paramType.isAnnotationPresent(PathVariable.class)) {
                 if (matcher == null || matcher.groupCount() == 0) {
-                    throw new IllegalArgumentException(); //todo return bad request
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
                 }
 
                 String paramStrValue = matcher.group(pathVarIndex);
-                params[i] = parseVariable(paramType.getType(), paramStrValue);
-
+                try {
+                    params[i] = parseVariable(paramType.getType(), paramStrValue);
+                } catch (Exception e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
             } else if (paramType.isAnnotationPresent(Qualifier.class)) {
                 String qualifier = paramType.getAnnotation(Qualifier.class).value();
                 params[i] = dispatcherServlet.getContainer().getInstance(qualifier);
@@ -81,7 +83,11 @@ public class RequestHandler {
 
                 String paramName = paramType.getAnnotation(RequestParam.class).value();
                 String paramStrValue = requestParams.get(paramName);
-                params[i] = parseVariable(paramType.getType(), paramStrValue);
+                try {
+                    params[i] = parseVariable(paramType.getType(), paramStrValue);
+                } catch (Exception e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
             } else {
                 params[i] = dispatcherServlet.getContainer().getInstance(paramType.getType());
             }
@@ -106,7 +112,7 @@ public class RequestHandler {
         return map;
     }
 
-    private Object parseVariable(Class<?> type, String strValue) { //todo check what happens for invalid param , different casing or containing some symbol like '.' or needing int but param is a str or missing one...
+    private Object parseVariable(Class<?> type, String strValue) {
         if (strValue == null) {
             return null;
         }
