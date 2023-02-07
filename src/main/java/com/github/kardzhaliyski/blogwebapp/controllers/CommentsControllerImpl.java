@@ -20,17 +20,17 @@ public class CommentsControllerImpl {
         this.commentMapper = commentMapper;
     }
 
-//    @GetMapping({"/", ""})
-//    @Role(UserRole.USER)
-//    public Comment[] getComments() {
-//        return commentMapper.getAllComments();
-//    }
-
-    @GetMapping(value = {"/", ""}, params = {"postId"})
+    @GetMapping({"/", ""})
     @Role(UserRole.USER)
-    public Comment[] getComment(@RequestParam("postId") int postId) {
-        return commentMapper.getAllCommentsForPost(postId);
+    public Comment[] getComments() {
+        return commentMapper.getAllComments();
     }
+
+//    @GetMapping(value = {"/", ""}, params = {"postId"})
+//    @Role(UserRole.USER)
+//    public Comment[] getComment(@RequestParam("postId") int postId) {
+//        return commentMapper.getAllCommentsForPost(postId);
+//    }
 
 
 }

@@ -78,7 +78,12 @@ public class RequestHandler {
                 params[i] = dispatcherServlet.getContainer().getInstance(qualifier);
             } else if (paramType.isAnnotationPresent(RequestParam.class)) {
                 if (requestParams == null) {
-                    requestParams = parseRequestParams(req.getQueryString());
+                    String queryString = req.getQueryString();
+                    if(queryString == null) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                    }
+
+                    requestParams = parseRequestParams(queryString);
                 }
 
                 String paramName = paramType.getAnnotation(RequestParam.class).value();

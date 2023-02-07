@@ -31,30 +31,34 @@ public class ContainerAutoConfigurator {
 
     private final ApplicationContext applicationContext;
     private DispatcherServlet dispatcherServlet;
+    private MybatisConfig mybatisConfig;
 
-    public ContainerAutoConfigurator() {
-        try {
-            applicationContext = new ApplicationContext();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public ContainerAutoConfigurator() throws Exception {
+        applicationContext = new ApplicationContext();
+        init();
     }
 
-    public ContainerAutoConfigurator(ApplicationContext applicationContext) {
+    public ContainerAutoConfigurator(ApplicationContext applicationContext) throws Exception {
         this.applicationContext = applicationContext;
+        init();
     }
 
-    public ApplicationContext getContainer() {
+    private void init() throws Exception {
+        importProperties();
+        mybatisConfig = new MybatisConfig(applicationContext);
+        mybatisConfig.init();
+        applicationContext.registerInstance(MybatisConfig.class, mybatisConfig);
+        dispatcherServlet = applicationContext.getInstance(DispatcherServlet.class);
+    }
+
+    public ApplicationContext getApplicationContext() {
         return applicationContext;
     }
 
-    public void run(Class<?> primaryClass) throws Exception {
-        System.out.println("stop 1 ");//todo remove
+    public void scanPackage(Class<?> primaryClass) throws Exception {
         Set<Class<?>> classes = getClasses(primaryClass);
-        System.out.println("Classes : " + classes.size());//todo remove
-        importProperties();
         extractInterfaceImplementations(classes);
-        MybatisConfig.init(applicationContext, classes);
+        mybatisConfig.initMappers(classes.toArray(Class[]::new));
         extractBeansFromConfigurations(classes);
         initComponents(classes);
     }
@@ -65,10 +69,6 @@ public class ContainerAutoConfigurator {
     }
 
     private void initComponents(Set<Class<?>> classes) throws Exception {
-        if (dispatcherServlet == null) {
-            dispatcherServlet = applicationContext.getInstance(DispatcherServlet.class);
-        }
-
         for (Class<?> clazz : classes) {
             if (clazz.isInterface() || clazz.isEnum()) {
                 continue;
@@ -79,7 +79,7 @@ public class ContainerAutoConfigurator {
             }
 
             Object instance = applicationContext.getInstance(clazz);
-            if(clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(RestController.class)) {
+            if (clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(RestController.class)) {
                 dispatcherServlet.addController(instance);
             }
         }
@@ -87,7 +87,7 @@ public class ContainerAutoConfigurator {
 
     private boolean isComponent(Class<?> clazz) {
         for (Annotation annotation : clazz.getAnnotations()) {
-            if (COMPONENT_ANNOTATIONS.contains(annotation.annotationType())){
+            if (COMPONENT_ANNOTATIONS.contains(annotation.annotationType())) {
                 return true;
             }
         }
@@ -146,44 +146,22 @@ public class ContainerAutoConfigurator {
 
     private Set<Class<?>> getClasses(Class<?> primaryClass) throws URISyntaxException, IOException {
         File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-        String path = primaryClass.getPackage().getName();
-        path = path.replaceAll("\\.", "/");
-        if(jarFile.isFile()) {
+        if (jarFile.isFile()) { //todo refactor
             final JarFile jar = new JarFile(jarFile);
             Set<Class<?>> set = new HashSet<>();
-//            Set<Class<?>> set = jar.stream()
-//                    .filter(e -> e.getName().endsWith(".class"))
-//                    .map(e -> e.getName())
-//                    .map(s -> s.replaceAll("/", "."))
-//                    .filter((f) -> !f.toString().contains("$"))
-//                    .map(this::getClass)
-//                    .collect(Collectors.toSet());
             Enumeration<JarEntry> entries = jar.entries();
+            String name = primaryClass.getPackage().getName();
+            String path = name.replaceAll("\\.", "/");
             while (entries.hasMoreElements()) {
                 JarEntry jarEntry = entries.nextElement();
-
-                if (jarEntry.isDirectory()) {
+                String fileName = jarEntry.getName();
+                if (jarEntry.isDirectory()
+                        || !fileName.startsWith(path)
+                        || !fileName.endsWith(".class")
+                        || fileName.contains("$")) {
                     continue;
                 }
 
-                System.out.println(path);
-                if(!jarEntry.getName().startsWith(path)) {
-                    continue;
-                }
-
-                if (!jarEntry.getName().endsWith(".class")) {
-                    continue;
-                }
-
-                if(jarEntry.getName().contains("$")) {
-                    continue;
-                }
-
-                System.out.println("---------");
-                System.out.println(jarEntry.getName());
-                System.out.println(jarEntry.getRealName());
-
-                String name = jarEntry.getName().replaceAll("/", ".");
                 name = name.substring(0, name.length() - ".class".length());
                 Class<?> clazz = getClass(name);
                 set.add(clazz);
@@ -192,13 +170,13 @@ public class ContainerAutoConfigurator {
             jar.close();
             return set;
         } else {
-        Path directory = Path.of(primaryClass.getResource("").toURI());
-        return Files.walk(directory)
-                .filter((f) -> f.toString().endsWith(".class"))
-                .filter((f) -> !f.toString().contains("$"))
-                .map(this::getClassPath)
-                .map(this::getClass)
-                .collect(Collectors.toSet());
+            Path directory = Path.of(primaryClass.getResource("").toURI());
+            return Files.walk(directory)
+                    .filter((f) -> f.toString().endsWith(".class"))
+                    .filter((f) -> !f.toString().contains("$"))
+                    .map(this::getClassPath)
+                    .map(this::getClass)
+                    .collect(Collectors.toSet());
         }
 
     }
