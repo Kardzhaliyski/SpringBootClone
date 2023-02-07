@@ -9,7 +9,7 @@ import com.github.kardzhaliyski.blogwebapp.security.Role;
 import com.github.kardzhaliyski.springbootclone.annotations.*;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
-import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
+import com.github.kardzhaliyski.springbootclone.server.ResponseEntity;
 
 import static com.github.kardzhaliyski.springbootclone.utils.HttpStatus.*;
 

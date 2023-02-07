@@ -1,6 +1,8 @@
 package com.github.kardzhaliyski.springbootclone;
 
 import com.github.kardzhaliyski.springbootclone.annotations.*;
+import com.github.kardzhaliyski.springbootclone.interceptors.InterceptorRegistry;
+import com.github.kardzhaliyski.springbootclone.interceptors.WebMvcConfigurer;
 import com.github.kardzhaliyski.springbootclone.utils.MybatisConfig;
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import com.github.kardzhaliyski.springbootclone.server.DispatcherServlet;
@@ -62,7 +64,7 @@ public class ContainerAutoConfigurator {
     }
 
     public void scanPackage(Class<?> baseClass) throws Exception {
-        Set<Class<?>> classes = getClasses(baseClass);
+        Set<Class<?>> classes = scanClasses(baseClass);
         extractInterfaceImplementations(classes);
         mybatisConfig.initMappers(classes.toArray(Class[]::new));
         extractBeansFromConfigurations(classes);
@@ -103,11 +105,7 @@ public class ContainerAutoConfigurator {
 
     private void extractBeansFromConfigurations(Set<Class<?>> classes) throws Exception {
         for (Class<?> clazz : classes) {
-            if (clazz.isInterface()) {
-                continue;
-            }
-
-            if (!clazz.isAnnotationPresent(Configuration.class)) {
+            if (clazz.isInterface() || !clazz.isAnnotationPresent(Configuration.class)) {
                 continue;
             }
 
@@ -121,6 +119,11 @@ public class ContainerAutoConfigurator {
             }
 
             Object instance = applicationContext.getInstance(clazz);
+            if(instance instanceof WebMvcConfigurer webMvcConfigurer) {
+                InterceptorRegistry registry = applicationContext.getInstance(InterceptorRegistry.class);
+                webMvcConfigurer.addInterceptors(registry);
+            }
+
             for (Method method : clazz.getMethods()) {
                 if (!method.isAnnotationPresent(Bean.class)) {
                     continue;
@@ -158,33 +161,12 @@ public class ContainerAutoConfigurator {
         }
     }
 
-    private Set<Class<?>> getClasses(Class<?> primaryClass) throws URISyntaxException, IOException {
+    private Set<Class<?>> scanClasses(Class<?> primaryClass) throws URISyntaxException, IOException {
         File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
         if (jarFile.isFile()) {
-            String path = primaryClass.getPackage().getName();
-            path = path.replaceAll("\\.", "/");
-            try (JarFile jar = new JarFile(jarFile);) {
-                Set<Class<?>> set = new HashSet<>();
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry jarEntry = entries.nextElement();
-                    String name = jarEntry.getName();
-                    if (jarEntry.isDirectory()
-                            || !name.startsWith(path)
-                            || !name.endsWith(".class")
-                            || name.contains("$")) {
-                        continue;
-                    }
-
-                    name = name.replaceAll("/", ".");
-                    name = name.substring(0, name.length() - ".class".length());
-                    Class<?> clazz = getClass(name);
-                    set.add(clazz);
-                }
-
-                return set;
-            }
+            return scanClassesFromJar(primaryClass, jarFile);
         } else {
+            //For IDE use
             Path directory = Path.of(primaryClass.getResource("").toURI());
             return Files.walk(directory)
                     .filter((f) -> f.toString().endsWith(".class"))
@@ -193,14 +175,38 @@ public class ContainerAutoConfigurator {
                     .map(this::getClass)
                     .collect(Collectors.toSet());
         }
+    }
 
+    private Set<Class<?>> scanClassesFromJar(Class<?> primaryClass, File jarFile) throws IOException {
+        String path = primaryClass.getPackage().getName();
+        path = path.replaceAll("\\.", "/");
+        try (JarFile jar = new JarFile(jarFile)) {
+            Set<Class<?>> set = new HashSet<>();
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry jarEntry = entries.nextElement();
+                String name = jarEntry.getName();
+                if (jarEntry.isDirectory()
+                        || !name.startsWith(path)
+                        || !name.endsWith(".class")
+                        || name.contains("$")) {
+                    continue;
+                }
 
+                name = name.replaceAll("/", ".");
+                name = name.substring(0, name.length() - ".class".length());
+                Class<?> clazz = getClass(name);
+                set.add(clazz);
+            }
+
+            return set;
+        }
     }
 
     private String getClassPath(Path f) {
         String stringPath = f.toString();
-        int index = stringPath.indexOf("com\\github\\kardzhaliyski"); //todo remove
-        stringPath = stringPath.substring(index);
+        int index = stringPath.indexOf("classes");
+        stringPath = stringPath.substring(index + "classes\\".length());
         stringPath = stringPath.replaceAll("\\\\", ".");
         return stringPath.substring(0, stringPath.length() - ".class".length());
     }

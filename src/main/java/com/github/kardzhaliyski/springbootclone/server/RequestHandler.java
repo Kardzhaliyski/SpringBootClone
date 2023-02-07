@@ -43,14 +43,17 @@ public class RequestHandler {
             response = invokeMultiParamMethod(req, matcher, paramTypes);
         }
 
-
         PrintWriter writer = resp.getWriter();
         writer.println(gson.toJson(response));
         writer.flush();
     }
 
+    public Method getMethod() {
+        return this.method;
+    }
+
     private Object invokeMultiParamMethod(HttpServletRequest req, Matcher matcher, Parameter[] paramTypes) throws Exception {
-        Object[] params = new Object[paramTypes.length];
+        Object[] params = new Object[paramTypes.length];//todo refactor
         int pathVarIndex = 1;
         Map<String, String> requestParams = null;
         for (int i = 0; i < paramTypes.length; i++) {
@@ -145,4 +148,6 @@ public class RequestHandler {
 
         return null;
     }
+
+
 }

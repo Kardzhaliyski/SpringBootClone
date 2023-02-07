@@ -3,6 +3,8 @@ package com.github.kardzhaliyski.springbootclone.server;
 import com.github.kardzhaliyski.springbootclone.annotations.*;
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
 import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
+import com.github.kardzhaliyski.springbootclone.interceptors.HandlerInterceptor;
+import com.github.kardzhaliyski.springbootclone.interceptors.InterceptorRegistry;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -26,51 +28,102 @@ public class DispatcherServlet extends HttpServlet {
             DeleteMapping.class);
 
     private final ApplicationContext applicationContext;
-    Map<String, RequestHandler> simpleRequests;
-    Map<Pattern, RequestHandler> complexRequests;
+    private final Map<String, RequestHandler> simpleRequests;
+    private final Map<Pattern, RequestHandler> complexRequests;
+    private final InterceptorRegistry interceptorRegistry;
 
-    public DispatcherServlet(ApplicationContext applicationContext) {
+    public DispatcherServlet(ApplicationContext applicationContext) throws Exception {
         this.applicationContext = applicationContext;
         this.simpleRequests = new HashMap<>();
         this.complexRequests = new HashMap<>();
+        this.interceptorRegistry = applicationContext.getInstance(InterceptorRegistry.class);
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HandlerMethod handlerMethod = getHandlerMethod(req);
+        if (!preHandleInterceptors(req, resp, handlerMethod)) return;
+        try {
+            RequestHandler requestHandler = handlerMethod.requestHandler;
+            Matcher matcher = handlerMethod.matcher;
+            requestHandler.invoke(req, resp, matcher);
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+
+        postHandleInterceptors(req, resp, handlerMethod);
+        afterCompletionInterceptors(req, resp, handlerMethod);
+    }
+
+    private boolean preHandleInterceptors(HttpServletRequest req, HttpServletResponse resp, HandlerMethod handlerMethod) throws ServletException {
+        for (HandlerInterceptor interceptor : interceptorRegistry.getInterceptors()) {
+            try {
+                if (!interceptor.preHandle(req, resp, handlerMethod)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+        }
+
+        return true;
+    }
+
+    private void postHandleInterceptors(HttpServletRequest req, HttpServletResponse resp, HandlerMethod handlerMethod) throws ServletException {
+        for (HandlerInterceptor interceptor : interceptorRegistry.getInterceptors()) {
+            try {
+                interceptor.postHandle(req, resp, handlerMethod, null);
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+        }
+    }
+
+    private void afterCompletionInterceptors(HttpServletRequest req, HttpServletResponse resp, HandlerMethod handlerMethod) throws ServletException {
+        for (HandlerInterceptor interceptor : interceptorRegistry.getInterceptors()) {
+            try {
+                interceptor.afterCompletion(req, resp, handlerMethod, null);
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+        }
+    }
+
+    private HandlerMethod getHandlerMethod(HttpServletRequest req) {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null) {
             pathInfo = "";
         }
 
-        String method = req.getMethod();
-        String path = normalizePath(method, pathInfo);
-
+        String path = normalizePath(req.getMethod(), pathInfo);
         RequestHandler requestHandler = simpleRequests.get(path);
-        if (requestHandler != null) {
-            try {
-                requestHandler.invoke(req, resp);
-            } catch (Exception e) {
-                throw new ServletException(e);
-            }
-        } else {
-            for (Map.Entry<Pattern, RequestHandler> kvp : complexRequests.entrySet()) {
-                Pattern pattern = kvp.getKey();
-                Matcher matcher = pattern.matcher(path);
-                if (matcher.matches()) {
-                    requestHandler = kvp.getValue();
-                    try {
-                        requestHandler.invoke(req, resp, matcher);
-                    } catch (Exception e) {
-                        throw new ServletException(e);
-                    }
-                    break;
-                }
-            }
+        Matcher matcher = null;
+        if (requestHandler == null) {
+            matcher = complexRequestPattern(path);
+        }
+
+        if (matcher != null) {
+            requestHandler = complexRequests.get(matcher.pattern());
         }
 
         if (requestHandler == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        HandlerMethod handlerMethod = new HandlerMethod(requestHandler, matcher);
+        return handlerMethod;
+    }
+
+    private Matcher complexRequestPattern(String path) {
+        for (Map.Entry<Pattern, RequestHandler> kvp : complexRequests.entrySet()) {
+            Pattern pattern = kvp.getKey();
+            Matcher m = pattern.matcher(path);
+            if (m.matches()) {
+                return m;
+            }
+        }
+
+        return null;
     }
 
     public ApplicationContext getContainer() {
@@ -102,7 +155,6 @@ public class DispatcherServlet extends HttpServlet {
                     methodType = "POST";
                     yield a.value();
                 }
-
                 case PutMapping a -> {
                     methodType = "PUT";
                     yield a.value();

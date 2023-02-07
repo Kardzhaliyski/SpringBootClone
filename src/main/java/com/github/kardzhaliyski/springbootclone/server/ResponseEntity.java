@@ -1,4 +1,4 @@
-package com.github.kardzhaliyski.springbootclone.classes;
+package com.github.kardzhaliyski.springbootclone.server;
 
 import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;

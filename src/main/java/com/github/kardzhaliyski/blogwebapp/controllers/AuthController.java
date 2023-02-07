@@ -10,7 +10,7 @@ import com.github.kardzhaliyski.blogwebapp.security.Role;
 import com.github.kardzhaliyski.blogwebapp.services.LoginService;
 import com.github.kardzhaliyski.blogwebapp.services.UserService;
 import com.github.kardzhaliyski.springbootclone.annotations.*;
-import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
+import com.github.kardzhaliyski.springbootclone.server.ResponseEntity;
 import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;

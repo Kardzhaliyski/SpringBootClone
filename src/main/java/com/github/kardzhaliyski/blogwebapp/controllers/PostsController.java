@@ -5,7 +5,7 @@ import com.github.kardzhaliyski.blogwebapp.models.Post;
 import com.github.kardzhaliyski.blogwebapp.models.UserRole;
 import com.github.kardzhaliyski.blogwebapp.security.Role;
 import com.github.kardzhaliyski.springbootclone.annotations.*;
-import com.github.kardzhaliyski.springbootclone.classes.ResponseEntity;
+import com.github.kardzhaliyski.springbootclone.server.ResponseEntity;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 
 @RestController
