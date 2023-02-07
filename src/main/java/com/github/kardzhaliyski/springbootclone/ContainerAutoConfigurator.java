@@ -55,11 +55,16 @@ public class ContainerAutoConfigurator {
         return applicationContext;
     }
 
-    public void scanPackage(Class<?> primaryClass) throws Exception {
-        Set<Class<?>> classes = getClasses(primaryClass);
+    private void scanPackages(Class<?>... baseClasses) throws Exception {
+        for (Class<?> clazz : baseClasses) {
+            scanPackage(clazz);
+        }
+    }
+    public void scanPackage(Class<?> baseClass) throws Exception {
+        Set<Class<?>> classes = getClasses(baseClass);
         extractInterfaceImplementations(classes);
-        mybatisConfig.initMappers(classes.toArray(Class[]::new));
         extractBeansFromConfigurations(classes);
+        mybatisConfig.initMappers(classes.toArray(Class[]::new));
         initComponents(classes);
     }
 
@@ -105,8 +110,16 @@ public class ContainerAutoConfigurator {
                 continue;
             }
 
-            Object instance = applicationContext.getInstance(clazz);
+            if (clazz.isAnnotationPresent(ComponentScan.class)) {
+                ComponentScan cs = clazz.getAnnotation(ComponentScan.class);
+                if (cs.basePackageClasses().length != 0) {
+                    this.scanPackages(cs.basePackageClasses());
+                } else {
+                    this.scanPackage(clazz);
+                }
+            }
 
+            Object instance = applicationContext.getInstance(clazz);
             for (Method method : clazz.getMethods()) {
                 if (!method.isAnnotationPresent(Bean.class)) {
                     continue;
