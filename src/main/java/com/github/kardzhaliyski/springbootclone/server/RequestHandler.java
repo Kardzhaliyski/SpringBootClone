@@ -3,17 +3,17 @@ package com.github.kardzhaliyski.springbootclone.server;
 import com.github.kardzhaliyski.springbootclone.annotations.PathVariable;
 import com.github.kardzhaliyski.springbootclone.annotations.RequestBody;
 import com.github.kardzhaliyski.springbootclone.annotations.RequestParam;
+import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
 import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusException;
 import com.github.kardzhaliyski.springbootclone.utils.HttpHeaders;
-import com.github.kardzhaliyski.springbootclone.context.annotations.Qualifier;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.PrintWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -30,22 +30,18 @@ public class RequestHandler {
         this.dispatcherServlet = dispatcherServlet;
     }
 
-    public void invoke(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        invoke(req, resp, null);
+    public Object invoke(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        return invoke(req, resp, null);
     }
 
-    public void invoke(HttpServletRequest req, HttpServletResponse resp, Matcher matcher) throws Exception {
+    public Object invoke(HttpServletRequest req, HttpServletResponse resp, Matcher matcher) throws Exception {
         Parameter[] paramTypes = method.getParameters();
         Object response;
         if (paramTypes.length == 0) {
-            response = method.invoke(instance);
-        } else {
-            response = invokeMultiParamMethod(req, matcher, paramTypes);
+            return method.invoke(instance);
         }
 
-        PrintWriter writer = resp.getWriter();
-        writer.println(gson.toJson(response));
-        writer.flush();
+        return invokeMultiParamMethod(req, matcher, paramTypes);
     }
 
     public Method getMethod() {
@@ -82,7 +78,7 @@ public class RequestHandler {
             } else if (paramType.isAnnotationPresent(RequestParam.class)) {
                 if (requestParams == null) {
                     String queryString = req.getQueryString();
-                    if(queryString == null) {
+                    if (queryString == null) {
                         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
                     }
 

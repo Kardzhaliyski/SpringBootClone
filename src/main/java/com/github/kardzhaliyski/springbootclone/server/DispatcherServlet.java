@@ -6,12 +6,14 @@ import com.github.kardzhaliyski.springbootclone.exceptions.ResponseStatusExcepti
 import com.github.kardzhaliyski.springbootclone.interceptors.HandlerInterceptor;
 import com.github.kardzhaliyski.springbootclone.interceptors.InterceptorRegistry;
 import com.github.kardzhaliyski.springbootclone.utils.HttpStatus;
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ public class DispatcherServlet extends HttpServlet {
             PostMapping.class,
             DeleteMapping.class);
 
+    private final Gson gson;
     private final ApplicationContext applicationContext;
     private final Map<String, RequestHandler> simpleRequests;
     private final Map<Pattern, RequestHandler> complexRequests;
@@ -37,23 +40,50 @@ public class DispatcherServlet extends HttpServlet {
         this.simpleRequests = new HashMap<>();
         this.complexRequests = new HashMap<>();
         this.interceptorRegistry = applicationContext.getInstance(InterceptorRegistry.class);
+        this.gson = applicationContext.getInstance(Gson.class);
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HandlerMethod handlerMethod = getHandlerMethod(req);
         if (!preHandleInterceptors(req, resp, handlerMethod)) return;
+
+        Object response = null;
         try {
             RequestHandler requestHandler = handlerMethod.requestHandler;
             Matcher matcher = handlerMethod.matcher;
-            requestHandler.invoke(req, resp, matcher);
+            response = requestHandler.invoke(req, resp, matcher);
         } catch (Exception e) {
             throw new ServletException(e);
         }
 
         postHandleInterceptors(req, resp, handlerMethod);
         afterCompletionInterceptors(req, resp, handlerMethod);
+
+        writeResponse(resp, response);
     }
+
+    private void writeResponse(HttpServletResponse resp, Object response) throws IOException {
+        PrintWriter writer = resp.getWriter();
+        if (!(response instanceof ResponseEntity<?> responseEntity)) {
+            writer.println(gson.toJson(response));
+            writer.flush();
+            return;
+        }
+
+        if (responseEntity.headers != null) {
+            for (Map.Entry<String, String> header : responseEntity.headers) {
+                resp.addHeader(header.getKey(), header.getValue());
+            }
+        }
+
+        resp.setStatus(responseEntity.status.getCode());
+        if (responseEntity.body != null) {
+            writer.println(gson.toJson(response));
+            writer.flush();
+        }
+    }
+
 
     private boolean preHandleInterceptors(HttpServletRequest req, HttpServletResponse resp, HandlerMethod handlerMethod) throws ServletException {
         for (HandlerInterceptor interceptor : interceptorRegistry.getInterceptors()) {
