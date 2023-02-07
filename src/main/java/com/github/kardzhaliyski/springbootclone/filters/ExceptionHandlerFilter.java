@@ -34,8 +34,9 @@ public class ExceptionHandlerFilter extends HttpFilter {
         }
     }
 
-    private static void handle(HttpServletResponse res, HttpStatus e) throws IOException {
-        res.sendError(e.getCode());
+    private static void handle(HttpServletResponse res, HttpStatus e) {
+        res.reset();
+        res.setStatus(e.getCode());
     }
 
 }

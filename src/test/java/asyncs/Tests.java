@@ -1,6 +1,9 @@
 package asyncs;
 
+import com.github.kardzhaliyski.blogwebapp.controllers.PostsControllerImpl;
+import com.github.kardzhaliyski.springbootclone.annotations.Controller;
 import com.github.kardzhaliyski.springbootclone.context.ApplicationContext;
+import com.github.kardzhaliyski.springbootclone.utils.Annotations;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -43,4 +46,9 @@ public class Tests {
 //    }
 
 
+//    @Test
+//    public void test() {
+//        Annotations annotations = new Annotations();
+//        System.out.println(annotations.isAnnotationPresent(PostsControllerImpl.class, Controller.class));
+//    }
 }

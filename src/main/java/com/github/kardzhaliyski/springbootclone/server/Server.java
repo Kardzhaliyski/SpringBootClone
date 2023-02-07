@@ -29,12 +29,19 @@ public class Server {
         tomcat.getConnector();
 
         Context context = tomcat.addContext("", null);
+        addDispatcherServlet(context);
+        addExceptionHandlerFilter(context);
+    }
+
+    private void addDispatcherServlet(Context context) throws Exception {
         DispatcherServlet servlet = applicationContext.getInstance(DispatcherServlet.class);
         String servletName = servlet.getClass().getSimpleName();
         tomcat.addServlet("", servletName, servlet);
         context.addServletMappingDecoded("/*", servletName);
+    }
 
-        ExceptionHandlerFilter exceptionHandler = new ExceptionHandlerFilter();
+    private void addExceptionHandlerFilter(Context context) throws Exception {
+        ExceptionHandlerFilter exceptionHandler = applicationContext.getInstance(ExceptionHandlerFilter.class);
         FilterDef filterDef = new FilterDef();
         filterDef.setFilter(exceptionHandler);
         filterDef.setFilterName("ResponseEntityExceptionHandler");
