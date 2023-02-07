@@ -13,7 +13,6 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Set;
 
 public class MybatisConfig {
     private static final String DATASOURCE_DRIVER_CLASSNAME_PROPERTY_KEY = "spring.datasource.driverClassName";
@@ -21,8 +20,8 @@ public class MybatisConfig {
     private static final String DATASOURCE_USERNAME_PROPERTY_KEY = "spring.datasource.username";
     private static final String DATASOURCE_PASSWORD_PROPERTY_KEY = "spring.datasource.password";
 
+    private final ApplicationContext applicationContext;
     private Configuration mybatisConfig;
-    private ApplicationContext applicationContext;
     private SqlSessionFactory sqlSessionFactory;
 
     public MybatisConfig(ApplicationContext applicationContext) {

@@ -60,11 +60,12 @@ public class ContainerAutoConfigurator {
             scanPackage(clazz);
         }
     }
+
     public void scanPackage(Class<?> baseClass) throws Exception {
         Set<Class<?>> classes = getClasses(baseClass);
         extractInterfaceImplementations(classes);
-        extractBeansFromConfigurations(classes);
         mybatisConfig.initMappers(classes.toArray(Class[]::new));
+        extractBeansFromConfigurations(classes);
         initComponents(classes);
     }
 
@@ -159,29 +160,30 @@ public class ContainerAutoConfigurator {
 
     private Set<Class<?>> getClasses(Class<?> primaryClass) throws URISyntaxException, IOException {
         File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-        if (jarFile.isFile()) { //todo refactor
-            final JarFile jar = new JarFile(jarFile);
-            Set<Class<?>> set = new HashSet<>();
-            Enumeration<JarEntry> entries = jar.entries();
-            String name = primaryClass.getPackage().getName();
-            String path = name.replaceAll("\\.", "/");
-            while (entries.hasMoreElements()) {
-                JarEntry jarEntry = entries.nextElement();
-                String fileName = jarEntry.getName();
-                if (jarEntry.isDirectory()
-                        || !fileName.startsWith(path)
-                        || !fileName.endsWith(".class")
-                        || fileName.contains("$")) {
-                    continue;
+        if (jarFile.isFile()) {
+            String path = primaryClass.getPackage().getName();
+            path = path.replaceAll("\\.", "/");
+            try (JarFile jar = new JarFile(jarFile);) {
+                Set<Class<?>> set = new HashSet<>();
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry jarEntry = entries.nextElement();
+                    String name = jarEntry.getName();
+                    if (jarEntry.isDirectory()
+                            || !name.startsWith(path)
+                            || !name.endsWith(".class")
+                            || name.contains("$")) {
+                        continue;
+                    }
+
+                    name = name.replaceAll("/", ".");
+                    name = name.substring(0, name.length() - ".class".length());
+                    Class<?> clazz = getClass(name);
+                    set.add(clazz);
                 }
 
-                name = name.substring(0, name.length() - ".class".length());
-                Class<?> clazz = getClass(name);
-                set.add(clazz);
+                return set;
             }
-
-            jar.close();
-            return set;
         } else {
             Path directory = Path.of(primaryClass.getResource("").toURI());
             return Files.walk(directory)
@@ -191,6 +193,7 @@ public class ContainerAutoConfigurator {
                     .map(this::getClass)
                     .collect(Collectors.toSet());
         }
+
 
     }
 
